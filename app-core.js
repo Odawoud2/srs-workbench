@@ -382,7 +382,7 @@
     { id: 'smartness', k: 'h', title: 'Couplings and operating register', group: null, fold: 'work' },
     { id: 'sponsor', k: 'i', title: 'Sponsor brief', group: null, fold: 'work' },
     { id: 'dimension', k: 'j', title: 'Dimension detail', group: null, fold: 'work' },
-    { id: 'reference', k: '§', title: 'Reference', group: 'Library' },
+    { id: 'reference', k: '§', title: 'Indicators Library', group: 'Library' },
     { id: 'about', k: '?', title: 'About and help', group: null },
     { id: 'account', k: '@', title: 'Account and team', group: 'Workspace' }
   ];

@@ -427,7 +427,7 @@
         right = '<div class="panel"><div class="panel-head"><h3>From completion to full effect</h3><span class="small muted">bundle ' + esc(bs.first.bundle.id) + ', years after completion</span></div><div class="chart-wrap">' + mline(yrs, series, { min: lo, max: hi, height: 280, width: 500, label: 'Year profile of the ranked bundle', fmt: function (v) { return v.toFixed(2); } }) + '</div><p class="small muted">Nine lag profiles give each option\'s share of full effect in years one to eight. Capability moves first, because digital options deliver within two to three years; the outcomes follow as greening and densification mature.</p></div>';
       }
       html += '<div class="section grid c2">' + left + right + '</div>';
-      html += sources([['appraiser', 'Project records and effect sheets'], ['lead', 'Readiness and configuration'], ['reference', 'The thirteen checks and the lag profiles']]);
+      html += sources([['appraiser', 'Project records and effect sheets'], ['lead', 'Readiness and configuration'], ['reference', 'Indicators Library: the thirteen checks and the lag profiles']]);
       return html;
     },
     mount: function (root) { mountUnit(root); }
@@ -510,7 +510,7 @@
         var brows = Object.keys(BS).map(function (k) { var y = BS[k], b = y.attribution.B; var nm = (blist.filter(function (x) { return x.id === k; })[0] || {}).name || ''; return { label: k + ' ' + shorten(nm, 22), sub: (b.kappa === null ? 'κ undefined' : 'κ ' + b.kappa.toFixed(2)) + (y.normalised.share !== null ? ' · digital share ' + pc(y.normalised.share) : ''), bars: [{ name: 'digital φD', value: b.digital, color: DIG }, { name: 'physical φP', value: b.physical, color: PHY }] }; });
         html += '<div class="section panel"><div class="panel-head"><h3>The four bundles under the same attribution</h3><span class="small muted">at ' + esc(unitName(U().appraisalUnit || uid)) + '; the ranking does not read this</span></div><div class="chart-wrap mid">' + signedBars(brows, { label: 'Bundle attribution by layer', labelW: 190, width: 640 }) + '</div><p class="small muted">A digital layer that lowers B has neither a share nor a ratio; the reading sends the sponsor to the checks that fire on it. With the premium switched off every bundle reads κ = 1.00 and the layers are additive, the reading of versions 1.2 to 1.4.</p></div>';
       }
-      html += sources([['smartness', 'Couplings, premium and the operating register'], ['appraiser', 'Project records'], ['reference', 'The capability crosswalk']]);
+      html += sources([['smartness', 'Couplings, premium and the operating register'], ['appraiser', 'Project records'], ['reference', 'Indicators Library: the capability crosswalk']]);
       return html;
     },
     mount: function (root) { mountUnit(root); }
