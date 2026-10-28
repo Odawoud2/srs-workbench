@@ -1,0 +1,82 @@
+rules_version = '2';
+// SRS Workbench security rules. Deploy with: firebase deploy --only firestore:rules
+// The same rights are applied in the interface (cloud.js); these rules are what the server enforces.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function email() { return signedIn() && request.auth.token.email != null ? request.auth.token.email.lower() : ''; }
+    function member(orgId) { return signedIn() && exists(/databases/$(database)/documents/orgs/$(orgId)/members/$(request.auth.uid)); }
+    function role(orgId) { return get(/databases/$(database)/documents/orgs/$(orgId)/members/$(request.auth.uid)).data.role; }
+    function hasRole(orgId, roles) { return member(orgId) && role(orgId) in roles; }
+    function validRole(r) { return r in ['owner', 'lead', 'steward', 'appraiser', 'dimension', 'sponsor', 'viewer', 'portfolio', 'programme', 'project']; }
+
+    // A person's own pointer to their workspace.
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['orgId', 'email'])
+        && (exists(/databases/$(database)/documents/orgs/$(request.resource.data.orgId)/members/$(uid))
+            || exists(/databases/$(database)/documents/invites/$(email())));
+      allow delete: if false;
+    }
+
+    // Invitations are keyed by the invited email address. The invited person may read and delete their own; owners and
+    // assessment leads of the workspace may create, read and delete invitations for it.
+    match /invites/{inviteEmail} {
+      allow read: if signedIn() && (inviteEmail == email() || hasRole(resource.data.orgId, ['owner', 'lead']));
+      allow list: if signedIn();
+      allow create: if signedIn() && hasRole(request.resource.data.orgId, ['owner', 'lead'])
+        && validRole(request.resource.data.role) && request.resource.data.role != 'owner'
+        && request.resource.data.keys().hasOnly(['orgId', 'orgName', 'role', 'invitedBy', 'at']);
+      allow delete: if signedIn() && (inviteEmail == email() || hasRole(resource.data.orgId, ['owner', 'lead']));
+      allow update: if false;
+    }
+
+    match /orgs/{orgId} {
+      allow read: if member(orgId);
+      allow create: if signedIn() && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.keys().hasOnly(['name', 'createdBy', 'createdAt']);
+      allow update: if hasRole(orgId, ['owner']) && request.resource.data.createdBy == resource.data.createdBy;
+      allow delete: if false;
+
+      match /members/{uid} {
+        allow read: if member(orgId);
+        // the creator adds themself as owner; an invited person adds themself with the invited role; owners and leads manage others
+        allow create: if signedIn() && validRole(request.resource.data.role) && (
+             (request.auth.uid == uid && request.resource.data.role == 'owner'
+                && get(/databases/$(database)/documents/orgs/$(orgId)).data.createdBy == request.auth.uid)
+          || (request.auth.uid == uid
+                && get(/databases/$(database)/documents/invites/$(email())).data.orgId == orgId
+                && get(/databases/$(database)/documents/invites/$(email())).data.role == request.resource.data.role)
+        );
+        allow update: if validRole(request.resource.data.role) && request.auth.uid != uid && (
+             hasRole(orgId, ['owner'])
+          || (hasRole(orgId, ['lead']) && resource.data.role != 'owner' && request.resource.data.role != 'owner'));
+        allow delete: if hasRole(orgId, ['owner']) && request.auth.uid != uid;
+      }
+
+      // The shared workspace: register (data steward), config (assessment lead), options (project appraiser).
+      match /workspace/{part} {
+        allow read: if member(orgId);
+        allow write: if request.resource.data.updatedBy == request.auth.uid
+          && request.resource.data.keys().hasOnly(['json', 'rev', 'updatedAt', 'updatedBy', 'updatedByEmail'])
+          && request.resource.data.json is string && request.resource.data.json.size() < 900000
+          && (
+               (part == 'register' && hasRole(orgId, ['owner', 'lead', 'steward']))
+            || (part == 'config' && hasRole(orgId, ['owner', 'lead']))
+            || (part == 'options' && hasRole(orgId, ['owner', 'lead', 'appraiser', 'programme', 'project']))
+            || (part == 'strategy' && hasRole(orgId, ['owner', 'lead', 'sponsor', 'portfolio']))
+            || (part == 'programmes' && hasRole(orgId, ['owner', 'lead', 'portfolio', 'programme'])));
+      }
+
+      // The audit log can be read by owners and leads and appended by any member; nothing in it can be changed or removed.
+      match /audit/{entry} {
+        allow read: if hasRole(orgId, ['owner', 'lead']);
+        allow create: if member(orgId) && request.resource.data.uid == request.auth.uid
+          && request.resource.data.keys().hasOnly(['at', 'uid', 'email', 'role', 'part', 'summary']);
+        allow update, delete: if false;
+      }
+    }
+  }
+}

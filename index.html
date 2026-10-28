@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SRS Workbench</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Serif:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand"><span class="mark">SRS Workbench</span><span class="sub">Development Framework · Manual 1.5</span></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="foot" id="mode-line">Local mode: the calculator runs in your browser and edits stay on this device.</div>
+  </aside>
+  <div style="min-width:0">
+    <nav class="topbar" id="topbar"></nav>
+    <main class="main" id="main"></main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="srs-data.js"></script>
+<script src="srs-calc.js"></script>
+<script src="app-core.js"></script>
+<script src="app-screens.js"></script>
+<script src="app-levels.js"></script>
+<script src="app-smart.js"></script>
+<script src="app-demo.js"></script>
+<script src="firebase-config.js"></script>
+<script src="cloud.js"></script>
+
+</body>
+</html>
